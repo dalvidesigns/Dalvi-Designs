@@ -1,6 +1,3 @@
-# Create an animated, responsive landing page for Dalvi Designs and package it as a zip the user can download.
-import os, textwrap, zipfile, json, datetime, pathlib
-
 html = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -298,3 +295,4 @@ with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
     z.write(os.path.join(out_dir, "index.html"), arcname="index.html")
 
 zip_path, os.path.join(out_dir, "index.html")
+
