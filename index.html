@@ -1,0 +1,300 @@
+# Create an animated, responsive landing page for Dalvi Designs and package it as a zip the user can download.
+import os, textwrap, zipfile, json, datetime, pathlib
+
+html = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dalvi Designs — Social Media Content for UK Businesses</title>
+  <meta name="description" content="Dalvi Designs helps UK businesses with monthly content calendars, posts, carousels, reels, captions and hashtags. Fixed, transparent pricing."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#0f172a;
+      --soft:#111827;
+      --accent:#ffd166;
+      --accent-2:#4cc9f0;
+      --text:#e5e7eb;
+      --muted:#98a2b3;
+      --success:#22c55e;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;line-height:1.5}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1180px;margin:0 auto;padding:0 20px}
+    /* HERO */
+    .hero{position:relative;overflow:hidden;padding:96px 0 72px;background:radial-gradient(1200px 600px at 80% -10%, rgba(76,201,240,0.18), transparent 60%), radial-gradient(1000px 500px at 0% -20%, rgba(255,209,102,0.16), transparent 60%)}
+    .hero-inner{display:grid;grid-template-columns:1.25fr 1fr;gap:32px;align-items:center}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(76,201,240,0.12);border:1px solid rgba(76,201,240,0.25);font-weight:600;color:#cbefff}
+    .h1{font-size:clamp(28px, 6vw, 50px);line-height:1.1;margin:16px 0 12px;font-weight:800;letter-spacing:-0.02em}
+    .sub{color:var(--muted);font-size:clamp(14px, 2.6vw, 18px)}
+    .cta-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 18px;border-radius:14px;background:var(--accent);color:#111827;font-weight:800;border:0;cursor:pointer;transition:transform .2s, box-shadow .2s}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(255,209,102,0.25)}
+    .btn.alt{background:transparent;color:var(--text);border:1px solid #1f2937}
+    .hero-card{background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.08);padding:18px;border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06)}
+    .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .hc{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px}
+    .hc h4{margin:0 0 6px 0;font-size:16px}
+    .hc p{margin:0;color:var(--muted);font-size:13px}
+    /* WHY */
+    .section{padding:72px 0}
+    .center{text-align:center}
+    .kicker{color:#9ac7ff;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:12px}
+    .h2{font-size:clamp(24px, 4.6vw, 36px);margin:10px 0 8px;font-weight:800}
+    .grid-3{display:grid;gap:18px;grid-template-columns:repeat(3,1fr)}
+    .card{background:linear-gradient(0deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px}
+    .icon{font-size:22px}
+    .muted{color:var(--muted)}
+    /* PRICING */
+    .pricing{display:grid;gap:20px;grid-template-columns:repeat(3,1fr);align-items:stretch}
+    .plan{position:relative;background:linear-gradient(180deg, rgba(17,24,39,0.6), rgba(15,23,42,0.85));border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:14px;transition:transform .25s, box-shadow .25s}
+    .plan:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.35)}
+    .plan .name{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800}
+    .plan .price{font-size:34px;font-weight:800;color:var(--accent)}
+    .ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+    .ul li{display:flex;gap:10px;align-items:flex-start}
+    .tick{width:18px;height:18px;flex:0 0 18px;border-radius:4px;background:rgba(34,197,94,0.18);border:1px solid rgba(34,197,94,0.4);display:inline-flex;align-items:center;justify-content:center}
+    .ribbon{position:absolute;top:14px;right:-6px;background:var(--accent);color:#111827;font-weight:900;padding:6px 10px;border-radius:8px;transform:rotate(2deg);box-shadow:0 10px 20px rgba(255,209,102,0.25)}
+    .best{outline:2px solid rgba(255,209,102,0.45);background:linear-gradient(180deg, rgba(255,209,102,0.08), rgba(15,23,42,0.85))}
+    .subtle{opacity:.9}
+    .foot{margin-top:auto;display:flex;gap:12px;flex-wrap:wrap}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.18);color:var(--text)}
+    /* ABOUT */
+    .about{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center}
+    .about .box{background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px}
+    /* CTA */
+    .cta{padding:64px 0 90px;text-align:center;background:radial-gradient(900px 400px at 50% 100%, rgba(76,201,240,0.12), transparent 60%)}
+    .cta .cta-card{display:inline-block;background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:28px 24px}
+    /* FOOTER */
+    footer{padding:26px 0;color:#98a2b3;border-top:1px solid rgba(255,255,255,0.08)}
+    footer a{color:#cbd5e1}
+    /* ANIMATIONS */
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease, transform .7s ease}
+    .in-view{opacity:1 !important;transform:translateY(0) !important}
+    /* RESPONSIVE */
+    @media (max-width: 980px){
+      .hero-inner{grid-template-columns:1fr}
+      .about{grid-template-columns:1fr}
+      .grid-3,.pricing{grid-template-columns:1fr}
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"ProfessionalService",
+    "name":"Dalvi Designs",
+    "areaServed":"GB",
+    "url":"https://instagram.com/dalvidesings",
+    "sameAs":["https://instagram.com/dalvidesings"],
+    "email":"mailto:dalvidesigns0@gmail.com",
+    "description":"Social media content production for UK businesses: calendars, posts, carousels, reels, captions & hashtags.",
+    "offers":[
+      {"@type":"Offer","name":"Starter Impact (1 Month)","priceCurrency":"GBP","price":"300"},
+      {"@type":"Offer","name":"Growth Momentum (3 Months)","priceCurrency":"GBP","price":"750"},
+      {"@type":"Offer","name":"Market Dominator (6 Months)","priceCurrency":"GBP","price":"1400"}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="hero">
+    <div class="container hero-inner">
+      <div class="reveal">
+        <span class="badge">Dalvi Designs • UK Social Content</span>
+        <h1 class="h1">Done-for-you social content that brings customers — not just likes.</h1>
+        <p class="sub">Monthly content calendars, posts, carousels, reels, captions & hashtag sets. Built for UK cafés, salons, boutiques and local services.</p>
+        <div class="cta-row">
+          <a href="#pricing" class="btn">View Plans & Pricing</a>
+          <a class="btn alt" href="mailto:dalvidesigns0@gmail.com?subject=Enquiry%20—%20Dalvi%20Designs">Request Free Audit</a>
+        </div>
+      </div>
+      <div class="hero-card reveal">
+        <div class="hero-grid">
+          <div class="hc">
+            <h4>Strategic Content Calendar</h4>
+            <p>Clear posting plan matched to UK audiences & local buyer intent.</p>
+          </div>
+          <div class="hc">
+            <h4>High-Conversion Carousels</h4>
+            <p>Educational & promo carousels designed to drive clicks & bookings.</p>
+          </div>
+          <div class="hc">
+            <h4>Short-Form Reels</h4>
+            <p>15–30s edits with hooks, captions & smart pacing for reach.</p>
+          </div>
+          <div class="hc">
+            <h4>Captions + Hashtags</h4>
+            <p>Brand voice aligned copy and tailored hashtag clusters.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container center reveal">
+      <div class="kicker">Why Dalvi Designs</div>
+      <h2 class="h2">More customers. Less stress. Measurable momentum.</h2>
+      <p class="muted">You focus on your business. I’ll plan, create and deliver content ready to post — with reporting so you know what’s working.</p>
+    </div>
+    <div class="container grid-3">
+      <div class="card reveal">
+        <div class="icon">📅</div>
+        <h3>Consistent Plan</h3>
+        <p class="muted">Monthly calendars so you never run out of post ideas. Timing & themes aligned to your audience.</p>
+      </div>
+      <div class="card reveal">
+        <div class="icon">🎯</div>
+        <h3>Performance First</h3>
+        <p class="muted">Content crafted for clicks, bookings and enquiries — not vanity metrics.</p>
+      </div>
+      <div class="card reveal">
+        <div class="icon">🤝</div>
+        <h3>Flexible Collaboration</h3>
+        <p class="muted">Clear deliverables, fast comms, revision rounds that respect your brand.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="container center reveal">
+      <div class="kicker">Plans & Pricing</div>
+      <h2 class="h2">Choose the momentum you want</h2>
+      <p class="muted">Transparent, fixed pricing. Most clients pick <strong>Market Dominator</strong> for compounding results.</p>
+    </div>
+    <div class="container pricing">
+      <!-- Starter Impact -->
+      <div class="plan reveal subtle">
+        <div class="name">Starter Impact <span class="badge" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.16);color:#cbd5e1">1 Month</span></div>
+        <div class="price">£300</div>
+        <ul class="ul">
+          <li><span class="tick">✓</span><span>10 custom posts</span></li>
+          <li><span class="tick">✓</span><span>4 carousels</span></li>
+          <li><span class="tick">✓</span><span>4 short reels (15–30s)</span></li>
+          <li><span class="tick">✓</span><span>Captions + 15 tailored hashtags / post</span></li>
+          <li><span class="tick">✓</span><span>1 content calendar</span></li>
+          <li><span class="tick">✓</span><span>1 × 30-min strategy call</span></li>
+        </ul>
+        <div class="foot">
+          <a class="btn ghost" href="mailto:dalvidesigns0@gmail.com?subject=Starter%20Impact%20(£300)">Enquire</a>
+          <a class="btn" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">DM on Instagram</a>
+        </div>
+      </div>
+      <!-- Growth Momentum -->
+      <div class="plan reveal best">
+        <div class="ribbon">Most Popular</div>
+        <div class="name">Growth Momentum <span class="badge" style="background:rgba(34,197,94,0.14);border-color:rgba(34,197,94,0.35);color:#bbf7d0">3 Months</span></div>
+        <div class="price">£750</div>
+        <ul class="ul">
+          <li><span class="tick">✓</span><span>15 posts / month</span></li>
+          <li><span class="tick">✓</span><span>6 carousels / month</span></li>
+          <li><span class="tick">✓</span><span>6 short reels / month</span></li>
+          <li><span class="tick">✓</span><span>Content calendar & optimisation</span></li>
+          <li><span class="tick">✓</span><span>Monthly performance snapshot</span></li>
+          <li><span class="tick">✓</span><span>Priority support</span></li>
+        </ul>
+        <div class="foot">
+          <a class="btn ghost" href="mailto:dalvidesigns0@gmail.com?subject=Growth%20Momentum%20(£750)">Enquire</a>
+          <a class="btn" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">DM on Instagram</a>
+        </div>
+      </div>
+      <!-- Market Dominator -->
+      <div class="plan reveal" style="outline:3px solid rgba(255,209,102,0.5)">
+        <div class="ribbon">Best Value</div>
+        <div class="name">Market Dominator <span class="badge" style="background:rgba(255,209,102,0.22);border-color:rgba(255,209,102,0.5);color:#111827">6 Months</span></div>
+        <div class="price">£1,400</div>
+        <ul class="ul">
+          <li><span class="tick">✓</span><span>20 posts / month</span></li>
+          <li><span class="tick">✓</span><span>8 carousels / month</span></li>
+          <li><span class="tick">✓</span><span>8 short reels / month</span></li>
+          <li><span class="tick">✓</span><span>Full content strategy & brand guide</span></li>
+          <li><span class="tick">✓</span><span>Monthly performance report</span></li>
+          <li><span class="tick">✓</span><span>3 revision rounds</span></li>
+        </ul>
+        <div class="foot">
+          <a class="btn" href="mailto:dalvidesigns0@gmail.com?subject=Market%20Dominator%20(£1400)">Start Market Dominator</a>
+          <a class="btn alt" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">Chat on Instagram</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container about">
+      <div class="box reveal">
+        <div class="kicker">About</div>
+        <h2 class="h2">Hi, I’m Alban Dalvi</h2>
+        <p class="muted">Graphic designer & video editor. I help UK businesses turn attention into action with thoughtful content systems: research → calendar → design → reels → captions → reporting. Clear timelines, responsive communication and deliverables you can post immediately.</p>
+      </div>
+      <div class="box reveal">
+        <h3 style="margin:0 0 10px 0">How we’ll work</h3>
+        <ol style="margin:0;padding-left:18px">
+          <li>Free mini audit (DM or email)</li>
+          <li>Kickoff call + brand intake</li>
+          <li>Content calendar draft (3–5 days)</li>
+          <li>Production & review</li>
+          <li>Delivery + simple monthly report</li>
+        </ol>
+        <div class="cta-row" style="margin-top:16px">
+          <a class="btn" href="mailto:dalvidesigns0@gmail.com?subject=Free%20Mini%20Audit">Request Free Audit</a>
+          <a class="btn alt" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">DM @dalvidesings</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <div class="cta-card reveal">
+        <h2 class="h2" style="margin:0 0 8px 0">Ready to grow your UK audience?</h2>
+        <p class="muted" style="margin:0 0 18px 0">Pick a plan or message me for a free mini audit. I’ll reply within 24 hours.</p>
+        <div class="cta-row" style="justify-content:center">
+          <a class="btn" href="#pricing">See Plans</a>
+          <a class="btn alt" href="mailto:dalvidesigns0@gmail.com">Email</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>© 2025 Dalvi Designs</div>
+      <div><a href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">@dalvidesings</a> • <a href="mailto:dalvidesigns0@gmail.com">dalvidesigns0@gmail.com</a></div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in-view'); io.unobserve(e.target);} });
+    }, {threshold:0.15});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+    // Smooth anchor fallback for older browsers
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        const id=a.getAttribute('href').slice(1);
+        const el=document.getElementById(id);
+        if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
+      });
+    });
+  </script>
+</body>
+</html>
+"""
+
+# Write files
+out_dir = "/mnt/data/dalvi_designs_landing"
+os.makedirs(out_dir, exist_ok=True)
+with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
+    f.write(html)
+
+# Zip it
+zip_path = "/mnt/data/dalvi_designs_landing.zip"
+with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
+    z.write(os.path.join(out_dir, "index.html"), arcname="index.html")
+
+zip_path, os.path.join(out_dir, "index.html")
