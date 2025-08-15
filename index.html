@@ -1,4 +1,4 @@
-html = r"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -84,8 +84,8 @@ html = r"""<!DOCTYPE html>
     "@type":"ProfessionalService",
     "name":"Dalvi Designs",
     "areaServed":"GB",
-    "url":"https://instagram.com/dalvidesings",
-    "sameAs":["https://instagram.com/dalvidesings"],
+    "url":"https://instagram.com/dalvidesigns",
+    "sameAs":["https://instagram.com/dalvidesigns"],
     "email":"mailto:dalvidesigns0@gmail.com",
     "description":"Social media content production for UK businesses: calendars, posts, carousels, reels, captions & hashtags.",
     "offers":[
@@ -177,7 +177,7 @@ html = r"""<!DOCTYPE html>
         </ul>
         <div class="foot">
           <a class="btn ghost" href="mailto:dalvidesigns0@gmail.com?subject=Starter%20Impact%20(£300)">Enquire</a>
-          <a class="btn" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">DM on Instagram</a>
+          <a class="btn" href="#" onclick="openInstagram('dalvidesigns'); return false;">DM on Instagram</a>
         </div>
       </div>
       <!-- Growth Momentum -->
@@ -187,15 +187,15 @@ html = r"""<!DOCTYPE html>
         <div class="price">£750</div>
         <ul class="ul">
           <li><span class="tick">✓</span><span>15 posts / month</span></li>
-          <li><span class="tick">✓</span><span>6 carousels / month</span></li>
-          <li><span class="tick">✓</span><span>6 short reels / month</span></li>
-          <li><span class="tick">✓</span><span>Content calendar & optimisation</span></li>
-          <li><span class="tick">✓</span><span>Monthly performance snapshot</span></li>
-          <li><span class="tick">✓</span><span>Priority support</span></li>
+        <li><span class="tick">✓</span><span>6 carousels / month</span></li>
+        <li><span class="tick">✓</span><span>6 short reels / month</span></li>
+        <li><span class="tick">✓</span><span>Content calendar & optimisation</span></li>
+        <li><span class="tick">✓</span><span>Monthly performance snapshot</span></li>
+        <li><span class="tick">✓</span><span>Priority support</span></li>
         </ul>
         <div class="foot">
           <a class="btn ghost" href="mailto:dalvidesigns0@gmail.com?subject=Growth%20Momentum%20(£750)">Enquire</a>
-          <a class="btn" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">DM on Instagram</a>
+          <a class="btn" href="#" onclick="openInstagram('dalvidesigns'); return false;">DM on Instagram</a>
         </div>
       </div>
       <!-- Market Dominator -->
@@ -213,7 +213,7 @@ html = r"""<!DOCTYPE html>
         </ul>
         <div class="foot">
           <a class="btn" href="mailto:dalvidesigns0@gmail.com?subject=Market%20Dominator%20(£1400)">Start Market Dominator</a>
-          <a class="btn alt" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">Chat on Instagram</a>
+          <a class="btn alt" href="#" onclick="openInstagram('dalvidesigns'); return false;">Chat on Instagram</a>
         </div>
       </div>
     </div>
@@ -237,7 +237,7 @@ html = r"""<!DOCTYPE html>
         </ol>
         <div class="cta-row" style="margin-top:16px">
           <a class="btn" href="mailto:dalvidesigns0@gmail.com?subject=Free%20Mini%20Audit">Request Free Audit</a>
-          <a class="btn alt" href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">DM @dalvidesings</a>
+          <a class="btn alt" href="#" onclick="openInstagram('dalvidesigns'); return false;">DM @dalvidesigns</a>
         </div>
       </div>
     </div>
@@ -259,7 +259,7 @@ html = r"""<!DOCTYPE html>
   <footer>
     <div class="container" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <div>© 2025 Dalvi Designs</div>
-      <div><a href="https://instagram.com/dalvidesings" target="_blank" rel="noopener">@dalvidesings</a> • <a href="mailto:dalvidesigns0@gmail.com">dalvidesigns0@gmail.com</a></div>
+      <div><a href="#" onclick="openInstagram('dalvidesigns'); return false;">@dalvidesigns</a> • <a href="mailto:dalvidesigns0@gmail.com">dalvidesigns0@gmail.com</a></div>
     </div>
   </footer>
 
@@ -278,21 +278,16 @@ html = r"""<!DOCTYPE html>
         if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
       });
     });
+
+    // Try opening Instagram app first, then fallback to web link
+    function openInstagram(username){
+      const appLink = 'instagram://user?username=' + username;
+      const webLink = 'https://instagram.com/' + username;
+      // Attempt to open app
+      window.location = appLink;
+      // Fallback to web after short delay
+      setTimeout(function(){ window.location = webLink; }, 800);
+    }
   </script>
 </body>
 </html>
-"""
-
-# Write files
-out_dir = "/mnt/data/dalvi_designs_landing"
-os.makedirs(out_dir, exist_ok=True)
-with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
-    f.write(html)
-
-# Zip it
-zip_path = "/mnt/data/dalvi_designs_landing.zip"
-with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
-    z.write(os.path.join(out_dir, "index.html"), arcname="index.html")
-
-zip_path, os.path.join(out_dir, "index.html")
-
